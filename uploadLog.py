@@ -1,23 +1,58 @@
+
+# -*- coding: utf-8 -*-
 import requests
 import json
 import os
 import os.path, time
 import datetime
 import pathlib
+import mysql.connector
 
-fileSize = os.stat(r'C:\Users\jerso\Desktop\Empresas\InnovaSport\proyectoGit\raspcontrol\js\log_18_Nov.log')
-print('File Size is', fileSize.st_size, 'bytes')
+mydb = mysql.connector.connect(
+  host="localhost",
+  user="root",
+  password="esmpi",
+  database="controlv2"
+)
 
-fname = pathlib.Path(r'C:\Users\jerso\Desktop\Empresas\InnovaSport\proyectoGit\raspcontrol\js\log_18_Nov.log')
-dateCreate = datetime.datetime.fromtimestamp(fname.stat().st_ctime)
-print(dateCreate)
+#buscando si existe un registro en la base de datos 
+mycursor = mydb.cursor()
+mycursor.execute("SELECT day FROM uploadFile")
+myresult = mycursor.fetchone()
+print(myresult[0])
 
 now = datetime.datetime.now()
-print(now)
+# print(now)
+fileSize = os.stat(r'/home/pi/Documents/Control/js/log_18_Nov.log')
+# print('File Size is', fileSize.st_size, 'bytes')
 
-daysOnRasp = abs(now - dateCreate)
-print(daysOnRasp.days)
+if myresult[0] != now.day:
+    print("Aun no se ha subido el archivo")
+    if fileSize.st_size <= 6000000:
+        print("El archivo pesa menos de 6MB")
+        print("Subiendo el archivo")
+    else:
+        print("Borrando el archivo por el peso")
+else:
+    print("Ya existe un archivo en la base")
 
+
+
+# fname = pathlib.Path(r'/home/pi/Documents/Control/js/log_18_Nov.log')
+# dateCreate = datetime.datetime.fromtimestamp(fname.stat().st_ctime)
+# print(dateCreate)
+
+# daysOnRasp = abs(now - dateCreate)
+# print(daysOnRasp.days)
+
+# if daysOnRasp.days <=2 and fileSize.st_size <= 6000000:
+#     print("Si se cumplen las condiciones")
+#     print("Cambiando el archivo")
+#     mycursor = mydb.cursor()
+#     sql = "UPDATE uploadFile SET upload = 1 WHERE id = 1"
+#     mycursor.execute(sql)
+#     mydb.commit()
+#     print(mycursor.rowcount, "record(s) affected")
 
 
 def is_json(myjson):
